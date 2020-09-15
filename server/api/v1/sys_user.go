@@ -90,7 +90,7 @@ func tokenNext(c *gin.Context, user model.SysUser) {
 		NickName:    user.NickName,
 		Username:    user.Username,
 		AuthorityId: user.AuthorityId,
-		BufferTime:  60*60*24, // 缓冲时间1天 缓冲时间内会获得新的token刷新令牌 此时一个用户会存在两个有效令牌 但是前端只留一个 另一个会丢失
+		BufferTime:  60 * 60 * 24, // 缓冲时间1天 缓冲时间内会获得新的token刷新令牌 此时一个用户会存在两个有效令牌 但是前端只留一个 另一个会丢失
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix() - 1000,       // 签名生效时间
 			ExpiresAt: time.Now().Unix() + 60*60*24*7, // 过期时间 7天
@@ -296,5 +296,26 @@ func DeleteUser(c *gin.Context) {
 		response.FailWithMessage(fmt.Sprintf("删除失败，%v", err), c)
 	} else {
 		response.OkWithMessage("删除成功", c)
+	}
+}
+
+// @Tags SysUser
+// @Summary 删除用户
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body model.SysUser true "删除用户"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"修改成功"}"
+// @Router /user/setUserInfo [put]
+func SetUserInfo(c *gin.Context) {
+	var user model.SysUser
+	c.ShouldBindJSON(&user)
+	err, ReqUser := service.SetUserInfo(user)
+	if err != nil {
+		response.FailWithMessage(fmt.Sprintf("更新失败，%v", err), c)
+	} else {
+		response.OkWithData(gin.H{
+			"userInfo": ReqUser,
+		}, c)
 	}
 }
